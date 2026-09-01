@@ -406,6 +406,7 @@ def main():
 
     # ── 4. 나레이션에서 자막 생성 (글자수 비례 배치) ──
     chars = json.loads((OUT / "chars.json").read_text(encoding="utf-8"))
+    used = set()          # 자막에 실제로 칠해진 강조 단어
     full = " ".join(l["text"] for l in lines)
     caps, cursor = [], 0
     for l in lines:
@@ -425,9 +426,17 @@ def main():
             for w in marks[lines.index(l)]:
                 if w in shown:
                     shown = shown.replace(w, f"*{w}*", 1)
+                    used.add(w)
                     break
             caps.append({"start": round(chars[i0][1], 2),
                          "end": round(chars[i1][2], 2), "text": shown})
+
+    # 강조 단어가 자막 조각 경계에 걸쳐 잘리면 색이 안 칠해진다.
+    # 조용히 넘어가면 어떤 문장만 노랗고 어떤 문장은 안 노란 상태가 된다.
+    lost = [w for ws in marks for w in ws if w not in used]
+    if lost:
+        problems.append(f"  강조 단어가 자막 조각에 걸쳐 잘렸습니다: {', '.join(lost)} — "
+                        f"두세 글자로 줄이세요 (예: '자리가 남' → '자리')")
 
     # ── 6. 산출물 ──
     # 자막이 끊기지 않게 다음 조각 직전까지 늘린다.
