@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+node_modules/
+raw/
+sources/
+out/
+output/
+projects/
+public/sources/
+public/narration.mp3
+remix.json

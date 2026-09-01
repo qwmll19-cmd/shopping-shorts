@@ -1,0 +1,17 @@
+{
+  "name": "shopping-shorts-remix",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preview": "remotion studio src/index.jsx",
+    "render": "remotion render src/index.jsx Remix out/완성본.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "*",
+    "@remotion/media-utils": "*",
+    "react": "*",
+    "react-dom": "*",
+    "remotion": "*"
+  }
+}
