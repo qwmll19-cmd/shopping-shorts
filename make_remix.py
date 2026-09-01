@@ -189,16 +189,9 @@ def audit_script(plan, lines, problems):
 
 def main():
     no_tts = "--no-tts" in sys.argv
-    # 1단계 게이트를 도구가 직접 막는다.
-    #   문서에만 적어두면 건너뛴다. 실제로 건너뛰어서 화면과 다른 대본이 나왔다.
-    if not any((ROOT / "out" / "refs").glob("*.png")) and "--skip-ref" not in sys.argv:
-        for line in ("1단계(레퍼런스 분석)를 안 했습니다. out/refs/ 가 비어 있습니다.",
-                     "  1) watch 로 소재를 훑는다   2) ref_sheet.py 로 컷 시트를 만든다",
-                     "  3) 시트를 전부 열어 컷 순서·앵글·결과 장면과 없는 컷을 적는다",
-                     "  화면에 없는 동작을 대본에 쓰면 말과 그림이 어긋난다.",
-                     "  (레퍼런스가 정말 필요 없으면 --skip-ref)"):
-            print(line)
-        sys.exit(1)
+    # 0-A 게이트는 prep_sources.py 한 곳에만 둔다.
+    #   여기(7단계)에도 두면 같은 검사가 두 벌이 되고, --skip-ref 로 2단계를 통과해도
+    #   여기서 다시 막혀 해제 플래그가 일관되지 않는다. 소재를 만지는 첫 도구에서 막는 게 맞다.
     plan = json.loads((ROOT / "remix.json").read_text(encoding="utf-8"))
     VO.mkdir(parents=True, exist_ok=True)
 

@@ -8,7 +8,7 @@ lanczos 로 확대하고 언샤프로 윤곽을 살려 네이티브 해상도로
   python prep_sources.py --dir raw                     # 전부 9:16 으로
   python prep_sources.py raw/<파일>.mp4 --keep-top 1070  # 하단 자막 제거하며
 """
-import argparse, json, subprocess, sys
+import argparse, sys, json, subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -89,6 +89,20 @@ def main():
                     help="원본에서 위쪽 몇 px 만 남길지 (하단 자막 제거용)")
     ap.add_argument("--sharpen", type=float, default=0.9)
     a = ap.parse_args()
+
+    # 0-A 게이트 — 소재를 먼저 눈으로 보게 강제한다.
+    #   전처리는 소재를 만지는 첫 도구다. 여기서 막아야 "제품이 뭔지" 를
+    #   정하기 전에 시트를 열게 된다. make_remix 에서 막으면 대본을 다 쓴 뒤라 늦다.
+    #   실제로 파일명만 보고 제품을 단정했다가 종류가 통째로 틀린 적이 있다.
+    if not any((ROOT / "out" / "refs").glob("*.png")) and "--skip-ref" not in sys.argv:
+        for line in ("0-A 를 안 했습니다. out/refs/ 가 비어 있습니다.",
+                     "  소재를 먼저 눈으로 보고 제품이 무엇인지 확정한 뒤 전처리하세요.",
+                     "    python <watch>/scripts/watch.py raw/<파일> --detail balanced --out-dir out/w_<이름>",
+                     "    python ref_sheet.py --parent out --glob \"w_*\" --out out/refs",
+                     "  파일명으로 제품을 단정하지 마세요. 번역된 이름은 카테고리만 알려줍니다.",
+                     "  (레퍼런스가 정말 필요 없으면 --skip-ref)"):
+            print(line)
+        sys.exit(1)
 
     srcs = [Path(f) for f in a.files]
     if a.dir:

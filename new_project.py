@@ -22,6 +22,8 @@ PRODUCT_STATE = [
 
 TEMPLATE = {
     "title": "", "product": "", "keySelling": "",
+    # product 는 훅에서 발음할 짧은 이름. productFull 은 카피킷용 정식 상품명.
+    "productFull": "", "seller": "", "price": "", "link": "",
     "fps": 30, "width": 1080, "height": 1920,
     "voice": "여자",
     "voiceSettings": {"stability": 0.35, "similarity": 0.75, "style": 0.5},
