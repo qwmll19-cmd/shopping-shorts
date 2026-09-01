@@ -423,16 +423,33 @@ def main():
             off = k + len(p)
             # 이 문장의 강조 단어가 조각에 들어 있으면 별표를 다시 씌운다.
             shown = p
-            for w in marks[lines.index(l)]:
-                if w in shown:
-                    shown = shown.replace(w, f"*{w}*", 1)
-                    used.add(w)
-                    break
+            # 한 조각에 강조가 여러 개 있을 수 있다. 하나만 칠하고 멈추지 않는다.
+            # 원문에서 그 단어가 있던 자리만 칠한다. 단순 치환하면
+            # '차' 가 '차지하고요' 의 '차' 까지 칠해 엉뚱한 글자가 노래진다.
+            li = lines.index(l)
+            spans = []
+            for w in marks[li]:
+                at = l["text"].find(w, k)
+                if 0 <= at < k + len(p):
+                    spans.append((at - k, at - k + len(w), w))
+            shown = ""
+            prev = 0
+            for a_, b_, w in sorted(spans):
+                if a_ < prev or b_ > len(p):
+                    continue
+                shown += p[prev:a_] + f"*{w}*"
+                prev = b_
+                used.add(w)
+            shown += p[prev:]
             caps.append({"start": round(chars[i0][1], 2),
                          "end": round(chars[i1][2], 2), "text": shown})
 
     # 강조 단어가 자막 조각 경계에 걸쳐 잘리면 색이 안 칠해진다.
     # 조용히 넘어가면 어떤 문장만 노랗고 어떤 문장은 안 노란 상태가 된다.
+    short = sorted({w for ws in marks for w in ws if len(w.strip()) < 2})
+    if short:
+        problems.append(f"  한 글자 강조는 다른 단어 속에서도 칠해집니다: {', '.join(short)} — "
+                        f"두 글자 이상으로 쓰세요 (예: '차' → '차에')")
     lost = [w for ws in marks for w in ws if w not in used]
     if lost:
         problems.append(f"  강조 단어가 자막 조각에 걸쳐 잘렸습니다: {', '.join(lost)} — "
