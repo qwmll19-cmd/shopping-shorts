@@ -55,6 +55,18 @@ const Caption = ({ text }) => {
   const { fps } = useVideoConfig();
   const s = spring({ frame, fps, config: { damping: 200, mass: 0.5 } });
 
+  // `*단어*` 는 강조색으로 그린다. 헤드라인과 같은 표기법.
+  // 뒤 겹(외곽선)은 색을 주지 않는다 — 검정 위에 색을 얹으면 테두리가 지저분해진다.
+  const accent = window.__SHORTS_CAPTION__?.accent ?? "#FFD84D";
+  const draw = (front) =>
+    String(text).split(/(\*[^*]+\*)/).filter(Boolean).map((part, i) =>
+      part.startsWith("*") && part.endsWith("*") ? (
+        <span key={i} style={front ? { color: accent } : undefined}>{part.slice(1, -1)}</span>
+      ) : (
+        <span key={i} style={front ? { color: "#fff" } : undefined}>{part}</span>
+      )
+    );
+
   // 두 겹을 정확히 겹쳐 그린다: 뒤는 굵은 검정 외곽선, 앞은 흰 글자.
   // text-shadow 를 여러 개 겹치면 모서리가 계단처럼 깨져 보인다.
   const base = {
@@ -81,8 +93,8 @@ const Caption = ({ text }) => {
           color: "#000",
           WebkitTextStroke: `${CAPTION_STROKE}px #000`,
           filter: "drop-shadow(0 6px 14px rgba(0,0,0,.55))",
-        }}>{text}</div>
-        <div style={{ ...base, position: "absolute", left: 0, top: 0, right: 0, color: "#fff" }}>{text}</div>
+        }}>{draw(false)}</div>
+        <div style={{ ...base, position: "absolute", left: 0, top: 0, right: 0 }}>{draw(true)}</div>
       </div>
     </AbsoluteFill>
   );

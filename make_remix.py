@@ -219,7 +219,9 @@ def main():
     # 문장마다 억양이 처음부터 시작해 끝에서 떨어지고, 이어붙이면
     # "영혼 없는 토막"으로 들린다. 한 번에 읽혀야 억양이 문장을 넘어 이어진다.
     # 문장 경계는 with-timestamps 가 주는 문자 단위 시각으로 잘라낸다.
-    texts = [n["text"] for n in plan["narration"]]
+    # 자막 강조 표기 `*단어*` 는 화면에만 쓴다. TTS 에는 별표를 넘기지 않는다.
+    marks = [re.findall(r"\*([^*]+)\*", n["text"]) for n in plan["narration"]]
+    texts = [n["text"].replace("*", "") for n in plan["narration"]]
     track = ROOT / "public" / "narration.mp3"
     track.parent.mkdir(parents=True, exist_ok=True)
     extra = speed / min(speed, 1.2)          # 1.2 초과분은 ffmpeg 로
@@ -418,8 +420,14 @@ def main():
             i0 = min(base + k, len(chars) - 1)
             i1 = min(base + k + len(p) - 1, len(chars) - 1)
             off = k + len(p)
+            # 이 문장의 강조 단어가 조각에 들어 있으면 별표를 다시 씌운다.
+            shown = p
+            for w in marks[lines.index(l)]:
+                if w in shown:
+                    shown = shown.replace(w, f"*{w}*", 1)
+                    break
             caps.append({"start": round(chars[i0][1], 2),
-                         "end": round(chars[i1][2], 2), "text": p})
+                         "end": round(chars[i1][2], 2), "text": shown})
 
     # ── 6. 산출물 ──
     # 자막이 끊기지 않게 다음 조각 직전까지 늘린다.

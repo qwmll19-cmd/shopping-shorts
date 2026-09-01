@@ -128,16 +128,16 @@ def main():
     if sp_p.exists() and nar_p.exists():
         sps = json.loads(sp_p.read_text(encoding="utf-8"))
         loud = []
-        for a, b in [(sps[i][1], sps[i + 1][0]) for i in range(len(sps) - 1)]:
-            if b - a < 0.04:
+        for g0, g1 in [(sps[i][1], sps[i + 1][0]) for i in range(len(sps) - 1)]:
+            if g1 - g0 < 0.04:
                 continue
-            o = subprocess.run(["ffmpeg", "-v", "info", "-ss", f"{a:.3f}", "-t", f"{b-a:.3f}",
+            o = subprocess.run(["ffmpeg", "-v", "info", "-ss", f"{g0:.3f}", "-t", f"{g1-g0:.3f}",
                                 "-i", str(nar_p), "-af", "volumedetect", "-f", "null", "-"],
                                capture_output=True, text=True, encoding="utf-8",
                                errors="replace").stderr
             m = re.search(r"mean_volume: (-?[\d.]+) dB", o)
             if m and float(m.group(1)) > -30:
-                loud.append(f"{a:.2f}~{b:.2f}({m.group(1)}dB)")
+                loud.append(f"{g0:.2f}~{g1:.2f}({m.group(1)}dB)")
         ok.append(("문장 사이가 조용한가", not loud,
                    "조용함" if not loud else "말소리 남음 — " + ", ".join(loud[:3])))
 
