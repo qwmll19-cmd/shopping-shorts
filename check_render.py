@@ -154,6 +154,12 @@ def main():
                 if not any(w in sec.split(chr(10))[0] and NOTE in sec for sec in secs)]
         ok.append(("카피킷 파트너스 고지", not miss,
                    "세 플랫폼 모두 있음" if not miss else "빠진 곳: " + ", ".join(miss)))
+        # 썸네일 파일만 있으면 소용없다. 플랫폼이 자동으로 고르는 커버는
+        #   0.7초 구간(전체의 3%)을 거의 집지 않아 문구 없는 프레임이 올라간다.
+        cmiss = [w for w in ("유튜브", "인스타", "틱톡")
+                 if not any(w in sec.split(chr(10))[0] and "커버" in sec for sec in secs)]
+        ok.append(("카피킷 커버 지정 안내", not cmiss,
+                   "세 플랫폼 모두 있음" if not cmiss else "빠진 곳: " + ", ".join(cmiss)))
         left = txt.count("[쿠팡_링크]")
         ok.append(("카피킷 링크 채움", left == 0,
                    "채워짐" if left == 0 else f"[쿠팡_링크] {left}곳 남음 — 업로드 전에 바꾸세요"))
